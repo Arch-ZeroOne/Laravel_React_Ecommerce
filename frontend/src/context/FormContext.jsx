@@ -1,4 +1,4 @@
-import React, { useState, useContext, useState } from "react";
+import React, { useState, useContext } from "react";
 const Context = React.createContext();
 
 export function useForm() {
@@ -6,14 +6,18 @@ export function useForm() {
 }
 
 export default function FormContext({ children }) {
+  const [id, setId] = useState();
   const [rowData, setRowData] = useState([]);
   const [productName, setProductName] = useState();
   const [description, setDescription] = useState();
   const [price, setPrice] = useState();
   const [stock, setStock] = useState();
   const [image, setImage] = useState();
+  const [status, setStatus] = useState();
 
   const context_value = {
+    id,
+    setId,
     rowData,
     setRowData,
     productName,
@@ -26,6 +30,8 @@ export default function FormContext({ children }) {
     setStock,
     image,
     setImage,
+    status,
+    setStatus,
   };
 
   return <Context value={context_value}>{children}</Context>;

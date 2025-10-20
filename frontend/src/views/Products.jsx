@@ -2,18 +2,20 @@ import { useState, useEffect } from "react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import instance from "../axiosClient";
-
+import { useForm } from "../context/FormContext";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Create new GridExample component
 const Products = () => {
   // Row Data: The data to be displayed.
-  const [rowData, setRowData] = useState([]);
-  const [productName, setProductName] = useState();
-  const [description, setDescription] = useState();
-  const [price, setPrice] = useState();
-  const [stock, setStock] = useState();
-  const [image, setImage] = useState();
+  const { rowData, setRowData } = useForm();
+  const { productName, setProductName } = useForm();
+  const { description, setDescription } = useForm();
+  const { price, setPrice } = useForm();
+  const { stock, setStock } = useForm();
+  const { image, setImage } = useForm();
+  const { status, setStatus } = useForm();
+  const { id } = useForm();
 
   // Column Definitions: Defines & controls grid columns.
   const [colDefs, setColDefs] = useState([
@@ -58,13 +60,9 @@ const Products = () => {
       image: url,
     };
 
-    console.log(payload);
-
     try {
       const addProduct = async () => {
         const request = await instance.post("/products/add", payload);
-        const { added } = request.data;
-        console.log(added);
       };
 
       addProduct();
@@ -72,8 +70,33 @@ const Products = () => {
       console.error("Error While Adding:", error);
     }
   };
+  const handleUpdate = (url) => {
+    const payload = {
+      product_name: productName,
+      description: description,
+      stock,
+      price,
+      image: url,
+    };
 
-  const handleFileUpload = async () => {
+    console.log(payload);
+
+    try {
+      const updateProduct = async () => {
+        const request = await instance.patch(`/products/${id}`, payload);
+        const response = request.data;
+        const { message } = response;
+        console.log(message);
+        console.log(response);
+      };
+
+      updateProduct();
+    } catch (error) {
+      console.error("Error While Adding:", error);
+    }
+  };
+
+  const handleFileUpload = async (mode) => {
     try {
       if (!image) return;
       const actualImage = image[0];
@@ -97,8 +120,12 @@ const Products = () => {
         console.log("Image Uploaded:");
         const response = await res.json();
         const { url } = response;
-
-        handleAdd(url);
+        console.log(url);
+        if (mode === "add") {
+          handleAdd(url);
+        } else {
+          handleUpdate(url);
+        }
       }
     } catch (error) {
       console.error("Error occured while uploading image:", error);
@@ -158,8 +185,64 @@ const Products = () => {
               {/* if there is a button in form, it will close the modal */}
               <button className="btn">Close</button>
             </form>
-            <button className="btn" onClick={() => handleFileUpload()}>
+            <button className="btn" onClick={() => handleFileUpload("add")}>
               Add Product
+            </button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="my_modal_6" className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box flex flex-col gap-5">
+          <h3 className="font-bold text-lg text-center">Enter New Details</h3>
+          <section className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Product Name"
+              className="input"
+              onChange={(e) => setProductName(e.target.value)}
+              value={productName}
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              className="input"
+              onChange={(e) => setDescription(e.target.value)}
+              value={description}
+            />
+            <input
+              type="number"
+              placeholder="Price"
+              className="input"
+              onChange={(e) => setPrice(e.target.value)}
+              value={price}
+            />
+            <input
+              type="number"
+              placeholder="Quantity"
+              className="input"
+              onChange={(e) => setStock(e.target.value)}
+              value={stock}
+            />
+
+            <input
+              type="file"
+              className="file-input "
+              onChange={(e) => setImage(e.target.files)}
+            />
+
+            <select onChange={(e) => setStatus(e.target.value)}>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </section>
+          <div className="modal-action">
+            <form method="dialog">
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn">Close</button>
+            </form>
+            <button className="btn" onClick={() => handleFileUpload("update")}>
+              Update product
             </button>
           </div>
         </div>
@@ -189,19 +272,36 @@ const ImageRenderer = (params) => {
 
 const ActionsRenderer = (params) => {
   const product_id = params.value;
+  const { setProductName } = useForm();
+  const { setDescription } = useForm();
+  const { setPrice } = useForm();
+  const { setStock } = useForm();
+  const { setStatus } = useForm();
+  const { setId } = useForm();
 
-  const handleForm = async (mode) => {
-    if (mode === "update") {
-      try {
-        const request = await instance.patch(`products/${product_id}`, );
-      } catch (error) {
-        console.error("Error updating user:", error);
-      }
-    } else {
-      try {
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
+  const handleValue = async () => {
+    try {
+      const request = await instance.get(`products/${product_id}`);
+      const { product } = request.data;
+      const { product_name, description, stock, price, status } = product;
+      setId(product_id);
+      setProductName(product_name);
+      setDescription(description);
+      setPrice(price);
+      setStock(stock);
+      setStatus(status);
+    } catch (error) {
+      console.error("Error Occured while updating:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const request = await instance.delete(`products/${product_id}`);
+      const { product } = request.data;
+      console.log(product);
+    } catch (error) {
+      console.error("Error Occured while deleting:", error);
     }
   };
 
@@ -216,7 +316,10 @@ const ActionsRenderer = (params) => {
         stroke="currentColor"
         class="size-6 hover:opacity-50 cursor-pointer"
         name="Update"
-        onClick={() => handleForm("update")}
+        onClick={() => {
+          document.getElementById("my_modal_6").showModal();
+          handleValue();
+        }}
       >
         <path
           stroke-linecap="round"
@@ -233,7 +336,7 @@ const ActionsRenderer = (params) => {
         stroke="currentColor"
         class="size-6 hover:opacity-50 cursor-pointer"
         name="Delete"
-        onClick={() => handleForm("delete")}
+        onClick={handleDelete}
       >
         <path
           stroke-linecap="round"

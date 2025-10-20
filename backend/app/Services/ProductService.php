@@ -43,9 +43,32 @@ class ProductService
         //get fields that are only fillable in the model
 
         //Updates the specific product
-
         $product->update($data);
 
+        return $product;
+    }
+    public function find(int $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return null;
+
+        }
+
+        return $product;
+    }
+
+    public function delete(int $id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return null;
+
+
+        }
+
+        $product->delete();
         return $product;
     }
 }

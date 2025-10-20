@@ -18,7 +18,6 @@ class ProductController extends Controller
 
         return response(["products" => $products]);
 
-
     }
 
     public function add(AddProductRequest $request)
@@ -30,7 +29,6 @@ class ProductController extends Controller
 
         }
         return response()->json(["message" => "Product Added", "product" => $added_product]);
-
 
     }
 
@@ -46,8 +44,28 @@ class ProductController extends Controller
         return response()->json(["message" => "Product Updated", "product" => $updated_product]);
     }
 
-    public function delete()
+    public function find(int $id)
     {
+        $product = $this->productService->find($id);
+
+        if (!$product) {
+            return response()->json(["message" => "Product not found"]);
+
+        }
+
+        return response()->json(["product" => $product]);
+
+    }
+
+    public function delete(int $id)
+    {
+        $product = $this->productService->delete($id);
+
+        if (!$product) {
+            return response()->json(["message" => "Product not found"], 404);
+
+        }
+        return response()->json(["message" => "Product Deleted", "product" => $product]);
 
     }
 }
