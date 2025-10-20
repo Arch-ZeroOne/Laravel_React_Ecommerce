@@ -21,6 +21,8 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(ProductController::class)->group(function () {
     Route::get("products/list", "list");
+    Route::post("products/add", "add");
+    Route::patch("products/{id}", "update");
 
 });
 

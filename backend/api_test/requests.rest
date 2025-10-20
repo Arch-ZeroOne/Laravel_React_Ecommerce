@@ -1,0 +1,12 @@
+    ### Post Example
+    POST http://127.0.0.1:8000/api/products/add
+    Content-Type: application/json
+
+    {
+    "product_name": "Wireless Bluetooth Headphones",
+    "description": "High-quality wireless headphones with noise cancellation and 20-hour battery life",
+    "price": 79.99,
+    "quantity": 150,
+    "isActive" : true,
+    "image": "https://example.com/images/headphones.jpg"
+}
